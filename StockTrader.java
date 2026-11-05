@@ -1,8 +1,7 @@
-//it means that the value of the stock they bought decreased from 2000-2010
-//the lowest month for sbux was during the 2008 financial crisis 
-	//and the lowest month for sp500 was during the great depression which makes since
+// it means that the value of the stock they bought decreased from 2000-2010
+// the lowest month for sbux was during the 2008 financial crisis
+// and the lowest month for sp500 was during the great depression which makes since
 //
-
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,10 +10,10 @@ import java.util.Scanner;
 
 public class StockTrader {
     public static void main(String[] args) throws FileNotFoundException {
-		Scanner s = new Scanner(System.in);
-		System.out.print("Input the file name: ");
-		String file = s.next();
-		
+        Scanner s = new Scanner(System.in);
+        System.out.print("Input the file name: ");
+        String file = s.next();
+
         Scanner in = new Scanner(new File(file + ".txt"));
         String symbol = in.next();
         int n = in.nextInt();
@@ -27,12 +26,25 @@ public class StockTrader {
         // call loadData, then printData
         loadData(in, years, months, prices);
         printData(years, months, prices);
-        
+
         int l = indexOfLowest(prices);
         int h = indexOfHighest(prices);
-        
-        System.out.printf("%s lowest: $%.2f in %s %d%n", file, prices[l], monthName(months[l]), years[l]);
-        System.out.printf("%s Highest: $%.2f in %s %d%n", file, prices[h], monthName(months[h]), years[h]);
+        int w = indexOfBiggestDrop(prices);
+
+        System.out.printf(
+            "%s lowest: $%.2f in %s %d%n", file, prices[l], monthName(months[l]), years[l]);
+        System.out.printf(
+            "%s Highest: $%.2f in %s %d%n", file, prices[h], monthName(months[h]), years[h]);
+        if (w != -1) {
+            double percent = (prices[w - 1] - prices[w]) / prices[w] * 100;
+            System.out.printf("%s biggest drop: %.2f%% in %s %d%n", file, percent,
+                monthName(months[w]), years[w]);
+        } else {
+            System.out.println("Price did not fall");
+        }
+
+        double result = simulate(years, months, prices);
+        System.out.printf("Final value: $%,.2f%n", result);
     }
 
     public static void loadData(Scanner in, int[] years, int[] months, double[] prices) {
@@ -74,4 +86,62 @@ public class StockTrader {
         }
         return highest;
     }
+
+    public static int indexOfBiggestDrop(double[] prices) {
+        int biggest = -1;
+        double drop = 0;
+
+        for (int i = 1; i < prices.length; i++) {
+            if ((prices[i - 1] - prices[i]) / prices[i - 1] > drop) {
+                drop = (prices[i - 1] - prices[i]) / prices[i - 1];
+                biggest = i;
+            }
+        }
+        return biggest;
+    }
+
+    public static final double START_CASH = 10000.0;
+    public static final double FEE = 10.0;
+
+    public static double simulate(int[] years, int[] months, double[] prices) {
+        double cash = START_CASH;
+        int shares = 0;
+        double boughtAt = 0.0;
+
+        for (int i = 0; i < prices.length; i++) {
+            double[] history = Arrays.copyOf(prices, i + 1);
+            String action = decide(history, shares > 0, boughtAt);
+
+            if (action.equals("BUY") && shares == 0) {
+                int canBuy = (int) ((cash - FEE) / prices[i]);
+                if (canBuy > 0) {
+                    shares = canBuy;
+                    cash = cash - shares * prices[i] - FEE;
+                    boughtAt = prices[i];
+                    System.out.printf("%s %d: BUY %d shares at $%.2f%n", monthName(months[i]),
+                        years[i], shares, prices[i]);
+                }
+            } else if (action.equals("SELL") && shares > 0) {
+                cash = cash + shares * prices[i] - FEE;
+                System.out.printf("%s %d: SELL %d shares at $%.2f%n", monthName(months[i]),
+                    years[i], shares, prices[i]);
+                shares = 0;
+                boughtAt = 0.0;
+            }
+        }
+        return cash + shares * prices[prices.length - 1];
+    }
+
+    public static String decide(double[] history, boolean holding, double boughtAt) {
+        return dipBuyer(history, holding, boughtAt); // change this line to switch strategies
+    }
+    
+    public static String buyAndHold(double[] history, boolean holding, double boughtAt) {
+		return "BUY";
+	}
+	
+	public static String dipBuyer(double[] history, boolean holding, double boughtAt) {
+		for(i = 0; i<
+		if(history
+	}
 }
