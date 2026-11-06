@@ -133,15 +133,84 @@ public class StockTrader {
     }
 
     public static String decide(double[] history, boolean holding, double boughtAt) {
-        return dipBuyer(history, holding, boughtAt); // change this line to switch strategies
+        return movingAverage(history, holding, boughtAt); // change this line to switch strategies
     }
-    
+
     public static String buyAndHold(double[] history, boolean holding, double boughtAt) {
-		return "BUY";
-	}
-	
-	public static String dipBuyer(double[] history, boolean holding, double boughtAt) {
-		for(i = 0; i<
-		if(history
-	}
+        return "BUY";
+    }
+
+    public static String dipBuyer(double[] history, boolean holding, double boughtAt) {
+        if (!holding && history.length > 2
+            && history[history.length - 1] < history[history.length - 2]
+            && history[history.length - 2] < history[history.length - 3])
+            return "BUY";
+
+        if (holding && history[history.length - 1] > boughtAt * 1.1)
+            return "SELL";
+
+        return "HOLD";
+    }
+
+    public static String movingAverage(double[] history, boolean holding, double boughtAt) {
+        double total = 0;
+        double average = 0;
+        if (history.length > 11) {
+            for (int i = history.length - 12; i < history.length; i++) {
+                total += history[i];
+            }
+            average = total / 12;
+            if (!holding && history[history.length - 1] > average)
+                return "BUY";
+            if (holding && history[history.length - 1] < average)
+                return "SELL";
+        }
+        return "HOLD";
+    }
+
+    public static String myStrategy(double[] history, boolean holding, double boughtAt) {
+        double total3 = 0;
+        double average3 = 0;
+        double total6 = 0;
+        double average6 = 0;
+        double highest3 = 0;
+        
+        if (history.length > 2) {
+            for (int i = history.length - 3; i < history.length; i++) {
+                total3 += history[i];
+                if(history[i] > highest) highest3 = history[i];
+            }
+            average3 = total3 / 3;
+        }
+
+        if (history.length > 5) {
+            for (int i = history.length - 6; i < history.length; i++) {
+                total6 += history[i];
+            }
+            average6 = total6 / 6;
+        }
+        if (!holding && history.length > 3
+            && history[history.length - 1] > history[history.length - 2]
+            && history[history.length - 2] < history[history.length - 3]
+            && history[history.length - 3] < history[history.length - 4]
+            && history[history.length - 1] > average3) return "BUY";
+            
+        if (!holding && history.length > 5
+            && history[history.length - 1] > history[history.length - 2]
+            && history[history.length - 2] < history[history.length - 3]
+            && history[history.length - 3] < history[history.length - 4]
+            && average3 > average6) return"BUY";
+            
+        if (holding && history[history.length - 1]  < boughtAt * 0.88) return "SELL";
+        
+        if(holding && history.length > 2
+            && history[history.length - 1] < history[history.length - 2]
+            && history[history.length - 2] < history[history.length - 3]
+            && history[history.length - 1] < average3) return "SELL";
+            
+        if(holding && history[history.length - 1] > boughtAt * 1.15 
+        && history[history.length - 1] < highest * 0.9) return"SELL";
+        
+        return"HOLD";
+    }
 }
